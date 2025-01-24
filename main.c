@@ -6,7 +6,7 @@
 #define MAX_TABLES 5
 #define MAX_COLUMNS 5
 #define MAX_RECORDS 10
-#define MAX_STRING_LENGTH 50
+#define MAX_STRING 50
 #define MAX_ENREGISTREMENTS 50
 
 
@@ -18,7 +18,7 @@ typedef struct {
 } Colonne;
 
 typedef struct {
-    char valeurs[MAX_COLUMNS][MAX_STRING_LENGTH];
+    char valeurs[MAX_COLUMNS][MAX_STRING];
 } Enregistrement;
 
 typedef struct {
@@ -29,8 +29,14 @@ typedef struct {
     int nbEnregistrements;
 } Table;
 
-
+// DÃ©claration globale des tables pour conserver les donnÃ©es
+Table tables[MAX_TABLES];
+/*Le tableau tables[MAX_TABLES] est dÃ©clarÃ© globalement
+pour que toutes les fonctions puissent y accÃ©der et manipuler les donnÃ©es.*/
 int nbTables = 0;
+/*Cette variable conserve
+le nombre actuel de tables dans le tableau tables.*/
+
 void creerTable(Table* table) {
     int i;
     printf("Entrez le nom de la table : ");
@@ -39,7 +45,7 @@ void creerTable(Table* table) {
     scanf("%d", &table->nbColonnes);
 
     if (table->nbColonnes > MAX_COLUMNS) {
-        printf("Le nombre de colonnes dépasse la limite de %d.\n", MAX_COLUMNS);
+        printf("Le nombre de colonnes dÃ©passe la limite de %d.\n", MAX_COLUMNS);
         exit(0);
     }
     for ( i = 0; i < table->nbColonnes; i++) {
@@ -74,15 +80,15 @@ void modifierTable(Table* table) {
             printf("Impossible de supprimer une colonne : aucune colonne dans la table.\n");
              exit(0);
         }
-     printf("Entrez le numéro de la colonne à supprimer : ");
+     printf("Entrez le numÃ©ro de la colonne Ã  supprimer : ");
         scanf("%d", &p);
        p--;
         if (p< 0 || p >= table->nbColonnes) {
-            printf("Numéro de colonne invalide.\n");
+            printf("NumÃ©ro de colonne invalide.\n");
             exit(0);
         }
         for (i = p; i < table->nbColonnes - 1; i++) {
-            table->colonnes[i] = table->colonnes[i + 1]; // Décaler les colonnes
+            table->colonnes[i] = table->colonnes[i + 1]; // DÃ©caler les colonnes
         }
         table->nbColonnes--;
         }
@@ -96,14 +102,14 @@ void supprimerTable(Table* tables, int* nbTables) {
     int i,p,choix;
 
     if (*nbTables == 0) {
-        printf("Aucune table à supprimer.\n");
+        printf("Aucune table Ã  supprimer.\n");
         exit(0);
     }
      printf("Tables disponibles :\n");
     for (int i = 0; i < *nbTables; i++) {
         printf("%d. %s\n", i + 1, tables[i].nom);
     }// Afficher les tables disponibles
-    printf("Entrez le numéro de la table à supprimer : ");
+    printf("Entrez le numÃ©ro de la table Ã  supprimer : ");
     scanf("%d", &choix);
     p = choix - 1;
     printf("Suppression de la table '%s'.\n", tables[p].nom);
@@ -111,192 +117,195 @@ void supprimerTable(Table* tables, int* nbTables) {
         tables[i] = tables[i + 1];
     }
      (*nbTables)--;
-        printf("Table supprimée avec succès !\n");
+        printf("Table supprimÃ©e avec succÃ¨s !\n");
 }
 
 
 //Fonction de l'eleve 2
 
-//Fonction pour ajouter un enregistrement
+// Fonction pour ajouter un enregistrement dans une table existante
 void ajouter_enregistrement() {
-    Table tables[MAX_TABLES];
-    Enregistrement nouvel_enregistrement;
-    char nom_table[MAX_STRING_LENGTH];
+    Enregistrement NEnregistrement; // Structure pour le nouvel enregistrement
+    char nomTable[MAX_STRING]; // Nom de la table cible
     int i, j;
 
-    // Demander le nom de la table dans laquelle ajouter un nouvel enregistrement
+    // Demander Ã  l'utilisateur de spÃ©cifier le nom de la table
     printf("Nom de la table dans laquelle ajouter l'enregistrement : ");
-    scanf("%s", nom_table);
+    scanf("%49s", nomTable);
 
-    // Parcourir les tables pour trouver celle qui correspond au nom saisi
+    // Recherche de la table correspondante par son nom
     for (i = 0; i < nbTables; i++) {
-        if (strcmp(tables[i].nom, nom_table) == 0) { // Vérifie si le nom correspond
-            if (tables[i].nbEnregistrements < MAX_ENREGISTREMENTS) { // Vérifie si la table n'est pas pleine
-                printf("Entrez les valeurs pour l'enregistrement:\n");
-                for (j = 0; j < tables[i].nbColonnes; j++) { // Saisir les valeurs pour chaque colonne
+        if (strcmp(tables[i].nom, nomTable) == 0) {
+            // VÃ©rification si la table a de l'espace pour un nouvel enregistrement
+            if (tables[i].nbEnregistrements < MAX_ENREGISTREMENTS) {
+                printf("Entrez les valeurs pour l'enregistrement :\n");
+
+                // Demander les valeurs pour chaque colonne
+                for (j = 0; j < tables[i].nbColonnes; j++) {
                     printf("Colonne %d: ", j + 1);
-                    scanf("%s", nouvel_enregistrement.valeurs[j]);
+                    scanf("%49s", NEnregistrement.valeurs[j]);
                 }
-                // Ajouter l'enregistrement à la table
-                tables[i].enregistrements[tables[i].nbEnregistrements] = nouvel_enregistrement;
-                tables[i].nbEnregistrements++;
-                printf("Enregistrement ajouté avec succès.\n");
+
+                // Ajouter l'enregistrement Ã  la table
+                tables[i].enregistrements[tables[i].nbEnregistrements++] = NEnregistrement;
+                printf("Enregistrement ajoutÃ© avec succÃ¨s.\n");
+                exit(0);
             } else {
-                // Si la table est pleine, afficher un message d'erreur
                 printf("Table pleine, impossible d'ajouter un nouvel enregistrement.\n");
+                exit(0);
             }
-            exit(0); // Terminer la fonction
         }
     }
-    // Si la table n'est pas trouvée, afficher un message
-    printf("Table '%s' non trouvée.\n", nom_table);
-    exit(0); // Terminer la fonction
+
+    // Message d'erreur si la table n'existe pas
+    printf("Table '%s' non trouvÃ©e.\n", nomTable);
 }
 
-//Fonction pour afficher un enregistrement
+// Fonction pour afficher les enregistrements d'une table
 void afficher_enregistrements() {
-    Table tables[MAX_TABLES];
-    char nom_table[MAX_STRING_LENGTH];
-    int i, j;
+    char nomTable[MAX_STRING]; // Nom de la table cible
+    int i,j,k;
 
-    // Demander le nom de la table à afficher
+    // Demander le nom de la table Ã  afficher
     printf("Entrez le nom de la table dont vous voulez afficher les enregistrements : ");
-    scanf("%s", nom_table);
+    scanf("%49s", nomTable);
 
-    // Parcourir les tables pour trouver celle qui correspond
+    // Recherche de la table correspondante
     for (i = 0; i < nbTables; i++) {
-        if (strcmp(tables[i].nom, nom_table) == 0) {
-            printf("Enregistrements de la table '%s' :\n", nom_table);
+        if (strcmp(tables[i].nom, nomTable) == 0) {
+            printf("Enregistrements de la table '%s' :\n", nomTable);
 
-            if (tables[i].nbEnregistrements == 0) { // Si la table est vide
-                printf("Aucun enregistrement trouvé.\n");
+            // Si la table est vide
+            if (tables[i].nbEnregistrements == 0) {
+                printf("Aucun enregistrement trouvÃ©.\n");
                 exit(0);
             }
 
-            // Afficher chaque enregistrement et ses colonnes
+            // Affichage des enregistrements
             for (j = 0; j < tables[i].nbEnregistrements; j++) {
                 printf("Enregistrement %d : ", j + 1);
-                for (int k = 0; k < tables[i].nbColonnes; k++) {
+                for (k = 0; k < tables[i].nbColonnes; k++) {
                     printf("%s ", tables[i].enregistrements[j].valeurs[k]);
                 }
                 printf("\n");
             }
-            exit(0); // Terminer la fonction
+            exit(0);
         }
     }
-    // Si la table n'est pas trouvée
-    printf("Table '%s' non trouvée.\n", nom_table);
-    exit(0);
+
+    // Message d'erreur si la table n'existe pas
+    printf("Table '%s' non trouvÃ©e.\n", nomTable);
 }
 
-//Fonction pour modifier un enregistrement
+// Fonction pour modifier un enregistrement dans une table
 void modifier_enregistrement() {
-    Table tables[MAX_TABLES];
-    char nom_table[MAX_STRING_LENGTH], valeur_recherche[MAX_STRING_LENGTH];
+    char nomTable[MAX_STRING]; // Nom de la table cible
+    char valeur_recherche[MAX_STRING]; // Valeur Ã  chercher
     int i, j, k;
-    char nouvelle_valeur[MAX_STRING_LENGTH];
 
-    // Demander le nom de la table et la valeur à modifier
+    // Demander le nom de la table et la valeur Ã  modifier
     printf("Entrez le nom de la table dans laquelle modifier l'enregistrement : ");
-    scanf("%s", nom_table);
-    printf("Entrez la valeur de l'enregistrement à modifier : ");
-    scanf("%s", valeur_recherche);
+    scanf("%49s", nomTable);
+    printf("Entrez la valeur de l'enregistrement Ã  modifier : ");
+    scanf("%49s", valeur_recherche);
 
-    // Parcourir les tables pour trouver celle qui correspond
+    // Recherche de la table
     for (i = 0; i < nbTables; i++) {
-        if (strcmp(tables[i].nom, nom_table) == 0) {
+        if (strcmp(tables[i].nom, nomTable) == 0) {
+            // Parcourir les enregistrements de la table
             for (j = 0; j < tables[i].nbEnregistrements; j++) {
+                // Recherche de la valeur dans les colonnes
                 for (k = 0; k < tables[i].nbColonnes; k++) {
-                    // Rechercher la valeur à modifier
                     if (strcmp(tables[i].enregistrements[j].valeurs[k], valeur_recherche) == 0) {
-                        printf("Enregistrement trouvé. Entrez la nouvelle valeur pour la colonne %d : ", k + 1);
-                        scanf("%s", nouvelle_valeur);
-                        sprintf(tables[i].enregistrements[j].valeurs[k], "%s", nouvelle_valeur); // Modifier la valeur
-                        printf("Enregistrement modifié avec succès.\n");
+                        printf("Enregistrement trouvÃ©. Entrez la nouvelle valeur pour la colonne %d : ", k + 1);
+                        scanf("%49s", tables[i].enregistrements[j].valeurs[k]);
+                        printf("Enregistrement modifiÃ© avec succÃ¨s.\n");
                         exit(0);
                     }
                 }
             }
-            // Si la valeur n'est pas trouvée
-            printf("Aucun enregistrement trouvé avec la valeur '%s'.\n", valeur_recherche);
+
+            // Message d'erreur si la valeur n'est pas trouvÃ©e
+            printf("Aucun enregistrement trouvÃ© avec la valeur '%s'.\n", valeur_recherche);
             exit(0);
         }
     }
-    // Si la table n'est pas trouvée
-    printf("Table '%s' non trouvée.\n", nom_table);
-    exit(0);
+
+    // Message d'erreur si la table n'existe pas
+    printf("Table '%s' non trouvÃ©e.\n", nomTable);
 }
 
-//Fonction pour supprimer un enregistrement
+// Fonction pour supprimer un enregistrement
 void supprimer_enregistrement() {
-    Table tables[MAX_TABLES];
-    char nom_table[MAX_STRING_LENGTH];
+    char nomTable[MAX_STRING]; // Nom de la table cible
     int i, index, j;
 
-    // Demander le nom de la table où supprimer un enregistrement
+    // Demander le nom de la table
     printf("Nom de la table pour supprimer un enregistrement : ");
-    scanf("%s", nom_table);
+    scanf("%49s", nomTable);
 
-    // Parcourir les tables pour trouver celle qui correspond
+    // Recherche de la table
     for (i = 0; i < nbTables; i++) {
-        if (strcmp(tables[i].nom, nom_table) == 0) {
-            if (tables[i].nbEnregistrements == 0) { // Si la table est vide
+        if (strcmp(tables[i].nom, nomTable) == 0) {
+            // Si la table est vide
+            if (tables[i].nbEnregistrements == 0) {
                 printf("Aucun enregistrement dans cette table.\n");
                 exit(0);
             }
 
-            // Demander l'index de l'enregistrement à supprimer
-            printf("Entrez le numéro de l'enregistrement à supprimer (1 à %d) : ", tables[i].nbEnregistrements);
+            // Demander l'index de l'enregistrement Ã  supprimer
+            printf("Entrez le numÃ©ro de l'enregistrement Ã  supprimer (1 Ã  %d) : ", tables[i].nbEnregistrements);
             scanf("%d", &index);
-            index--;
+            index--; // Convertir en index base 0
 
-            if (index < 0 || index >= tables[i].nbEnregistrements) { // Vérification de la validité de l'index
+            // VÃ©rification de la validitÃ© de l'index
+            if (index < 0 || index >= tables[i].nbEnregistrements) {
                 printf("Index d'enregistrement invalide.\n");
                 exit(0);
             }
 
-            // Supprimer l'enregistrement en décalant les suivants
+            // Supprimer l'enregistrement en dÃ©calant les suivants
             for (j = index; j < tables[i].nbEnregistrements - 1; j++) {
                 tables[i].enregistrements[j] = tables[i].enregistrements[j + 1];
             }
-            tables[i].nbEnregistrements--; // Réduire le nombre d'enregistrements
-            printf("Enregistrement supprimé avec succès.\n");
+            tables[i].nbEnregistrements--;
+            printf("Enregistrement supprimÃ© avec succÃ¨s.\n");
             exit(0);
         }
     }
-    // Si la table n'est pas trouvée
-    printf("Table '%s' non trouvée.\n", nom_table);
-    exit(0);
-}
 
+    // Message d'erreur si la table n'existe pas
+    printf("Table '%s' non trouvÃ©e.\n", nomTable);
+}
 //Fonction de l'eleve 3
 
 //Fonction pour sauvegarder une table dans un fichier CSV
 void sauvegarderTable(Table table[MAX_COLUMNS][MAX_TABLES], int nbTables,Enregistrement enrg) {
-    FILE *fichier = fopen("file.txt", "w"); // Ouvrir le fichier en mode écriture
+    FILE *fichier = fopen("file.txt", "w"); // Ouvrir le fichier en mode Ã©criture
+    char nomTable[30];
+    int i,j;
     if (fichier == NULL) {
         printf("Erreur: Impossible d'ouvrir le fichier pour sauvegarde.\n");
         exit(0);
     }
-    char nomTable[30];
-    int i,j;
-    // Écrire le nom de la table en première ligne
+
+    // Ã‰crire le nom de la table en premiÃ¨re ligne
     fprintf(fichier, "Table: %s\n", nomTable);
 
     // Parcourir les enregistrements (lignes)
     for (i = 0; i < nbEnregistrements; i++) {
         // Parcourir les colonnes de chaque enregistrement
         for (j = 0; j < nbColonnes; j++) {
-            fprintf(fichier, "%s", table[i][j]); // Écrire une colonne
+            fprintf(fichier, "%s", table[i][j]); // Ã‰crire une colonne
             if (j < nbColonnes - 1) {
-                fprintf(fichier, ","); // Ajouter une virgule sauf pour la dernière colonne
+                fprintf(fichier, ","); // Ajouter une virgule sauf pour la derniÃ¨re colonne
             }
         }
-        fprintf(fichier, "\n"); // Passer à la ligne suivante pour chaque enregistrement
+        fprintf(fichier, "\n"); // Passer Ã  la ligne suivante pour chaque enregistrement
     }
 
     fclose(fichier); // Fermer le fichier
-    printf("Table sauvegardée avec succès dans %s.\n", nomFichier);
+    printf("Table sauvegardÃ©e avec succÃ¨s dans %s.\n", nomFichier);
 }
 
 //Fonction pour charge un tableau d'un fichier
@@ -310,9 +319,9 @@ void chargerCSV() {
         return 0;
     }
 
-    fgets(ligne, sizeof(ligne), fichier); // Ignorer l'en-tête
+    fgets(ligne, sizeof(ligne), fichier); // Ignorer l'en-tÃªte
 
-    // Lire chaque ligne et extraire les données
+    // Lire chaque ligne et extraire les donnÃ©es
     while (fgets(ligne, sizeof(ligne), fichier) != NULL && i < MAX_RECORDS) {
       if (sscanf(ligne, "%d,%9[^,],%f",&table[i].id, table[i].nom, &table[i].salaire) == 3) {
             i++;
@@ -346,21 +355,21 @@ void Tri() {
             for (j = 0; j < tables[i].nbr_C; j++) {
                 if (strcmp(tables[i].Colonnes[j], Nom_C) == 0) {  // Comparaison avec les colonnes
                     indiceC = j;
-                    break;  // On sort de la boucle dès qu'on trouve la colonne
+                    break;  // On sort de la boucle dÃ¨s qu'on trouve la colonne
                 }
             }
 
-            // Si la colonne n'est pas trouvée
+            // Si la colonne n'est pas trouvÃ©e
             if (indiceC == -1) {
                 printf("Colonne '%s' introuvable.\n", Nom_C);
                 return;
             }
 
-            // Tri des enregistrements (tri à bulles)
+            // Tri des enregistrements (tri Ã  bulles)
             for (i = 0; i < tables[i].nbr_E - 1; i++) {
                 for (j = 0; j < tables[i].nbr_E - i - 1; j++) {
                     if (strcmp(tables[i].enregistrements[j].valeurs[indiceC], tables[i].enregistrements[j + 1].valeurs[indiceC]) > 0) {
-                        // Échange des enregistrements
+                        // Ã‰change des enregistrements
                         temp = tables[i].enregistrements[j];
                         tables[i].enregistrements[j] = tables[i].enregistrements[j + 1];
                         tables[i].enregistrements[j + 1] = temp;
@@ -369,12 +378,12 @@ void Tri() {
             }
 
             // Affichage du message de confirmation
-            printf("\nTable triée par '%s'.\n", Nom_C);
-            return;  // Sortir de la fonction après avoir trié
+            printf("\nTable triÃ©e par '%s'.\n", Nom_C);
+            exit(0);  // Sortir de la fonction aprÃ¨s avoir triÃ©
         }
     }
 
-    // Si la table n'est pas trouvée
+    // Si la table n'est pas trouvÃ©e
     printf("Table '%s' introuvable.\n", Nom_table);
 }
 }
@@ -394,17 +403,17 @@ void Chercher() {
         if (strcmp(tables[i].Nom, Nom_table) == 0) {  // Comparer avec le nom de la table
             printf("Nom de la colonne : ");
             scanf("%s", Nom_C);
-            printf("Valeur à rechercher : ");
+            printf("Valeur Ã  rechercher : ");
             scanf("%s", valeur);
 
             // Recherche de l'indice de la colonne
             for (j = 0; j < tables[i].nbr_C; j++) {
                 if (strcmp(tables[i].Colonnes[j], Nom_C) == 0) {  // Correction pour comparer avec le nom de la colonne
                     indiceC = j;
-                    break;  // On sort de la boucle dès qu'on trouve la colonne
+                    break;  // On sort de la boucle dÃ¨s qu'on trouve la colonne
                 }
             }
-            if (indiceC != -1) {  // Si la colonne a été trouvée
+            if (indiceC != -1) {  // Si la colonne a Ã©tÃ© trouvÃ©e
                 // Recherche de la valeur dans les enregistrements
                 for (k = 0; k < tables[i].nbr_E; k++) {
                     if (strcmp(tables[i].enregistrements[k][indiceC], valeur) == 0) {
@@ -415,12 +424,12 @@ void Chercher() {
                     }
                 }
             } else {
-                printf("Colonne %s non trouvée.\n", Nom_C);
+                printf("Colonne %s non trouvÃ©e.\n", Nom_C);
             }
-            return;  // Sortir de la fonction une fois la table trouvée
+            exit(0);  // Sortir de la fonction une fois la table trouvÃ©e
         }
     }
-    printf("Table %s non trouvée.\n", Nom_table);
+    printf("Table %s non trouvÃ©e.\n", Nom_table);
 }
 
 //Le main
@@ -429,8 +438,8 @@ int main() {
     int nbTables = 0,choix,numTable;
     chargerCSV();
     while (1) {
-        printf("\n--- Gestionnaire de base de données simplifiée ---\n");
-    printf("1. Créer une table\n");
+        printf("\n--- Gestionnaire de base de donnÃ©es simplifiÃ©e ---\n");
+    printf("1. CrÃ©er une table\n");
     printf("2. Modifier une table\n");
     printf("3. Supprimer une table\n");
     printf("4. Ajouter un enregistrement\n");
@@ -455,16 +464,16 @@ int main() {
                 }
                 break;
             case 2:
-                printf("Sélectionner la table à modifier :\n");
+                printf("SÃ©lectionner la table Ã  modifier :\n");
                 for (int i = 0; i < nbTables; i++) {
                     printf("%d. %s\n", i + 1, tables[i].nom);
                 }
-                printf("Entrez le numéro de la table : ");
+                printf("Entrez le numÃ©ro de la table : ");
                 scanf("%d", &numTable);
                 if (numTable > 0 && numTable <= nbTables) {
                     modifierTable(&tables[numTable - 1]);
                 } else {
-                    printf("Numéro de table invalide.\n");
+                    printf("NumÃ©ro de table invalide.\n");
                 }
                 break;
             case 3:
@@ -498,7 +507,7 @@ int main() {
                 printf("Quitter le programme...\n");
                 return 0;
             default:
-                printf("Choix invalide. Veuillez réessayer.\n");
+                printf("Choix invalide. Veuillez rÃ©essayer.\n");
         }
     }
 }
